@@ -1,0 +1,2 @@
+(defpackage #:linit
+  (:use #:cl))
