@@ -39,10 +39,9 @@
               (let ((status (make-array 1 :element-type '(signed-byte 32))))
                 (sb-posix:waitpid pid 0 status)
                 (let ((st (aref status 0)))
-                  (cond
-                    ((sb-posix:wifexited st)
-                     (setf (state service) (if (= (sb-posix:wexitstatus st) 0)
-                                               'stopped 'errored)))))))
+                  (when (sb-posix:wifexited st)
+                    (setf (state service) (if (= (sb-posix:wexitstatus st) 0)
+                                              'stopped 'errored))))))
             :name (symbol-name (name service))))))))
 
 (defun main (args)
