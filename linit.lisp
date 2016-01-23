@@ -35,7 +35,7 @@
         (loop
            (handler-case
                (multiple-value-bind (pid status)
-                   (sb-posix:waitpid -1 sb-posix:wnohang)
+                   (sb-posix:waitpid -1 0)
                  (setf
                   (state (find-service-by-pid pid))
                   (cond

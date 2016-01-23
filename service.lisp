@@ -51,11 +51,12 @@
   (let ((pid (sb-posix:fork)))
     (cond
       ((<= pid -1) (setf (state service) 'errored))
-      ((= pid 0) (handler-case
-                     (let ((startfn (start service)))
-                       (when startfn
-                         (funcall startfn))
-                       (sb-ext:exit :code 0))
-                   (error () (sb-ext:exit :code -1))))
+      ((= pid 0) (sb-ext:exit
+                  :code (handler-case
+                            (let ((startfn (start service)))
+                              (when startfn
+                                (funcall startfn))
+                              0)
+                          (error () -1))))
       (t (setf (pid service) pid
                (state service) 'started)))))
