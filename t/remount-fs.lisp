@@ -1,2 +1,2 @@
 (defservice remount-fs
-  :start (lambda () (run-program "mount" '("-a"))))
+  :start (lambda () (sb-ext:run-program "mount" '("-a"))))
