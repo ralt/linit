@@ -3,10 +3,27 @@
 (defvar *services* nil)
 
 (defmacro defservice (name &rest initargs)
-  `(push (make-instance 'service
-                        :name ',name
-                        ,@initargs)
-         *services*))
+  (let ((new-service (gensym)))
+    `(let ((,new-service (make-instance 'service
+                                       :name ',name
+                                       ,@initargs)))
+       (if (find-service ',name)
+           (replace-service ,new-service)
+           (add-service ,new-service)))))
+
+(defun find-service (name)
+  (find-if (lambda (service)
+             (eq (name service) name))
+           *services*))
+
+(defun replace-service (new-service)
+  (setf *services* (remove-if (lambda (service)
+                                (eq (name service) (name new-service)))
+                              *services*))
+  (add-service new-service))
+
+(defun add-service (service)
+  (push service *services*))
 
 (deftype service-state ()
   '(member started stopped errored))
