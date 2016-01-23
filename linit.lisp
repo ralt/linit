@@ -28,7 +28,6 @@
 
 (defun main (args)
   (declare (ignore args))
-  (swank:create-server :port 4444)
   (load-services #p"/lib/linit/*.lisp")
   (mapcar #'start-service *services*)
   (with-signal-handler *sigchld*
