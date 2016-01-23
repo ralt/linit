@@ -5,4 +5,5 @@
   :serial t
   :depends-on (:sb-posix :cffi :swank)
   :components ((:file "package")
+               (:file "service")
                (:file "linit")))
