@@ -29,11 +29,10 @@
   (let ((pid (sb-posix:fork)))
     (cond
       ((<= pid -1) (setf (state service) 'errored))
-      ((= pid 0) (progn
-                   (funcall (start service))
-                   (setf (state service) 'started)))
+      ((= pid 0) (funcall (start service)))
       (t (progn
            (setf (pid service) pid)
+           (setf (state service) 'started)
            (sb-thread:make-thread
             (lambda ()
               (let ((status (make-array 1 :element-type '(signed-byte 32))))
