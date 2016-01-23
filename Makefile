@@ -21,7 +21,6 @@ sbin/init: $(SOURCES) $(QL_LOCAL)/setup.lisp deps sbin
 		--asdf-tree $(QL_LOCAL)/dists \
 		--asdf-path . \
 		--load-system linit \
-		--eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (uiop:quit -1)))' \
 		--compress-core \
 		--output sbin/init --entry linit:main
 
