@@ -3,6 +3,6 @@
   :author "Florian Margaine <florian@margaine.com>"
   :license "MIT License"
   :serial t
-  :depends-on (:sb-posix :cffi)
+  :depends-on (:sb-posix :cffi :swank)
   :components ((:file "package")
                (:file "linit")))
