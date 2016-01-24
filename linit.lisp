@@ -24,12 +24,9 @@
          (cffi:foreign-funcall
           "signal" :int ,signo :pointer ,default-handler :pointer)))))
 
-(defvar *sigchld* 17)
-
 (defun main (args)
   (declare (ignore args))
-  (load-services #p"/lib/linit/*.lisp")
-  (with-signal-handler *sigchld*
+  (with-signal-handler sb-posix:sigchld
       (lambda ()
         (loop
            (handler-case
@@ -45,5 +42,6 @@
                          'stopped 'errored))
                     (t 'errored))))
              (sb-posix:syscall-error () (return)))))
+    (load-services #p"/lib/linit/*.lisp")
     (mapcar #'start-service *services*)
     (sb-impl::toplevel-repl nil)))
