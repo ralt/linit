@@ -29,13 +29,14 @@
 (defun main (args)
   (declare (ignore args))
   (load-services #p"/lib/linit/*.lisp")
-  (mapcar #'start-service *services*)
   (with-signal-handler *sigchld*
       (lambda ()
         (loop
            (handler-case
                (multiple-value-bind (pid status)
-                   (sb-posix:waitpid -1 0)
+                   (sb-posix:waitpid -1 sb-posix:wnohang)
+                 (when (= pid 0)
+                   (return))
                  (setf
                   (state (find-service-by-pid pid))
                   (cond
@@ -44,4 +45,5 @@
                          'stopped 'errored))
                     (t 'errored))))
              (sb-posix:syscall-error () (return)))))
+    (mapcar #'start-service *services*)
     (sb-impl::toplevel-repl nil)))
