@@ -43,5 +43,5 @@
                     (t 'errored))))
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
-    (mapcar #'start-service *services*)
+    (start-services)
     (sb-impl::toplevel-repl nil)))
