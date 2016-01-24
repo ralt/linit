@@ -1,5 +1,15 @@
 (in-package #:linit)
 
+(deftype service-state ()
+  '(member started stopped errored))
+
+(defclass service ()
+  ((pid :accessor pid :type integer)
+   (state :accessor state :type service-state)
+   (name :reader name :initarg :name :type symbol)
+   (start :initarg :start :reader start :type function)
+   (depends-on :initarg :depends-on :type list)))
+
 (defvar *services* nil)
 
 (defmacro defservice (name &rest initargs)
@@ -22,23 +32,14 @@
            *services*))
 
 (defun replace-service (new-service)
-  (setf *services* (remove-if (lambda (service)
-                                (eq (name service) (name new-service)))
-                              *services*))
-  (add-service new-service))
+  (setf *services* (append
+                    (remove-if (lambda (service)
+                                 (eq (name service) (name new-service)))
+                               *services*)
+                    new-service)))
 
 (defun add-service (service)
   (push service *services*))
-
-(deftype service-state ()
-  '(member started stopped errored))
-
-(defclass service ()
-  ((pid :accessor pid :type integer)
-   (state :accessor state :type service-state)
-   (name :reader name :initarg :name :type symbol)
-   (start :initarg :start :reader start :type function)
-   (depends-on :initarg :depends-on :type list)))
 
 (defun load-services (path)
   (dolist (service (directory path))
