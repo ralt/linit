@@ -129,8 +129,8 @@ and be fine, so it'll start. This bit is fairly easy."
                        (make-instance 'graph-element
                                       :service service))
                      services)))
-    (multiple-value-prog1 dag
-      (dolist (el dag)
+    (mapcar
+     (lambda (el)
        (when (before (service el))
          ;; This element is the child of another
          (dolist (parent-symbol (before (service el)))
@@ -142,7 +142,9 @@ and be fine, so it'll start. This bit is fairly easy."
          (dolist (child-symbol (after (service el)))
            (let ((child (find-graph-element-by-service-name dag child-symbol)))
              (vector-push-extend child (children el))
-             (vector-push-extend el (parents child)))))))))
+             (vector-push-extend el (parents child)))))
+       el)
+     dag)))
 
 (defun find-graph-element-by-service-name (dag name)
   (find-if (lambda (el)
