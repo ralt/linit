@@ -150,9 +150,12 @@ and be fine, so it'll start. This bit is fairly easy."
            *graph-elements*))
 
 (defun start-service (service)
+  (format t "Starting ~A...~%" (name service))
   (let ((pid (sb-posix:fork)))
     (cond
-      ((<= pid -1) (setf (state service) 'errored))
+      ((<= pid -1) (progn
+                     (setf (state service) 'errored)
+                     (format t "Error starting ~A~%" (name service))))
       ((= pid 0) (sb-ext:exit
                   :code (handler-case
                             (let ((startfn (start service)))
@@ -160,5 +163,7 @@ and be fine, so it'll start. This bit is fairly easy."
                                 (funcall startfn))
                               0)
                           (error () -1))))
-      (t (setf (pid service) pid
-               (state service) 'started)))))
+      (t (progn
+           (setf (pid service) pid
+                 (state service) 'started)
+           (format t "~A started.~%" (name service)))))))

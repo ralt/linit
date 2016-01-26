@@ -34,13 +34,16 @@
                    (sb-posix:waitpid -1 sb-posix:wnohang)
                  (when (= pid 0)
                    (return))
-                 (setf
-                  (state (find-service-by-pid pid))
-                  (cond
-                    ((sb-posix:wifexited status)
-                     (if (= (sb-posix:wexitstatus status) 0)
-                         'stopped 'errored))
-                    (t 'errored))))
+                 (let ((service (find-service-by-pid pid)))
+                   (setf
+                    (state service)
+                    (cond
+                      ((sb-posix:wifexited status)
+                       (if (= (sb-posix:wexitstatus status) 0)
+                           'stopped 'errored))
+                      (t 'errored)))
+                   (format t "~A changed to state ~A.~%"
+                           (name service) (state service))))
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
     (start-services)
