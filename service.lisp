@@ -104,7 +104,7 @@ and be fine, so it'll start. This bit is fairly easy."
 
 (defun root-elements (elements)
   (remove-if-not (lambda (element)
-                   (null (parents element)))
+                   (= 0 (length (parents element))))
                  elements))
 
 (defun has-cycle (el)
