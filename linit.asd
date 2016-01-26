@@ -9,4 +9,5 @@
   :entry-point "linit:main"
   :components ((:file "package")
                (:file "service")
+               (:file "graph")
                (:file "linit")))
