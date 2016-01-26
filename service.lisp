@@ -65,10 +65,8 @@ graph-element objects, that hold a reference to the service. While
 doing that, the elements without any parent (aka roots) are set aside.
 
 Once the graph-elements are all created, linit is going to check
-for circular references. To do that, it takes every root and goes
-through children, passing along the path (aka the list of services)
-it's using. As soon as a duplicate is found, it means a circular
-reference was hit. If that happens, the whole path is cancelled.
+for circular references using Tarjan's algorithm. If any cycle is
+found, then the whole path is cancelled.
 If linit didn't cancel, then there would be some infinite loop
 between the 2 circular dependencies, so it's kind of mandatory.
 What's nice is that the debug message is useful. Despite cancelling
