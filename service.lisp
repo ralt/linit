@@ -1,16 +1,33 @@
 (in-package #:linit)
 
+(defvar *services* nil)
+(defvar *graph-elements* nil)
+
 (deftype service-state ()
   '(member started stopped errored))
 
 (defclass service ()
   ((pid :accessor pid :type integer)
-   (state :accessor state :type service-state)
+   (state :accessor state :type service-state :initform nil)
    (name :reader name :initarg :name :type symbol)
-   (start :initarg :start :reader start :type function)
-   (depends-on :initarg :depends-on :type list)))
+   (start :initarg :start :reader start :type function :initform nil)
+   (before :initarg :before :reader before :type list :initform nil)
+   (after :initarg :after :reader after :type list :initform nil)))
 
-(defvar *services* nil)
+(defclass graph-element ()
+  ((service :initarg :service :reader service :type service)
+   (children :accessor children
+             :type (vector service)
+             :initform (make-array 0
+                                   :element-type 'service
+                                   :adjustable t
+                                   :fill-pointer 0))
+   (parents :accessor parents
+            :type (vector service)
+            :initform (make-array 0
+                                  :element-type 'service
+                                  :adjustable t
+                                  :fill-pointer 0))))
 
 (defmacro defservice (name &rest initargs)
   (let ((new-service (gensym)))
@@ -78,7 +95,46 @@ Every time a service is started, it's going to check if all its
 dependencies are started before. If any is missing, then it's
 cancelling its start. When the last dependency will start, the
 next tick will call the child, which will check all of its deps
-and be fine, so it'll start. This bit is fairly easy.")
+and be fine, so it'll start. This bit is fairly easy."
+  (create-graph-elements)
+  (dolist (el (root-elements *graph-elements*))
+    (unless (detect-cycle el)
+      (start-graph-services el))))
+
+(defun detect-cycle (el))
+
+(defun start-graph-services (el)
+  (when (every (lambda (parent)
+                 ;; aka non-nil
+                 (state (service parent)))
+               (parents el))
+    (start-service (service el))
+    (loop for child across (children el) do (start-graph-services child))))
+
+(defun create-graph-elements ()
+  (setf *graph-elements*
+        (mapcar (lambda (service)
+                  (make-instance 'graph-element
+                                 :service service))
+                *services*))
+  (dolist (el *graph-elements*)
+    (when (before (service el))
+      ;; This element is the child of another
+      (dolist (parent-symbol (before (service el)))
+        (let ((parent (find-graph-element-by-service-name parent-symbol)))
+          (vector-push-extend el (children parent))
+          (vector-push-extend parent (parents el)))))
+    (when (after (service el))
+      ;; This element is the parent of another
+      (dolist (child-symbol (after (service el)))
+        (let ((child (find-graph-element-by-service-name child-symbol)))
+          (vector-push-extend child (children el))
+          (vector-push-extend el (parents child)))))))
+
+(defun find-graph-element-by-service-name (name)
+  (find-if (lambda (el)
+             (eq (name (service el)) name))
+           *graph-elements*))
 
 (defun start-service (service)
   (let ((pid (sb-posix:fork)))
