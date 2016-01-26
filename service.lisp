@@ -97,10 +97,10 @@ dependencies are started before. If any is missing, then it's
 cancelling its start. When the last dependency will start, the
 next tick will call the child, which will check all of its deps
 and be fine, so it'll start. This bit is fairly easy."
-  (create-graph-elements)
-  (dolist (el (root-elements *graph-elements*))
-    (unless (has-cycle el)
-      (start-graph-services el))))
+  (let ((graph (make-dag *services*)))
+    (dolist (el (root-elements graph))
+      (unless (has-cycle el)
+        (start-graph-services el)))))
 
 (defun root-elements (elements)
   (remove-if-not (lambda (element)
@@ -124,30 +124,30 @@ and be fine, so it'll start. This bit is fairly easy."
     (start-service (service el))
     (loop for child across (children el) do (start-graph-services child))))
 
-(defun create-graph-elements ()
-  (setf *graph-elements*
-        (mapcar (lambda (service)
-                  (make-instance 'graph-element
-                                 :service service))
-                *services*))
-  (dolist (el *graph-elements*)
-    (when (before (service el))
-      ;; This element is the child of another
-      (dolist (parent-symbol (before (service el)))
-        (let ((parent (find-graph-element-by-service-name parent-symbol)))
-          (vector-push-extend el (children parent))
-          (vector-push-extend parent (parents el)))))
-    (when (after (service el))
-      ;; This element is the parent of another
-      (dolist (child-symbol (after (service el)))
-        (let ((child (find-graph-element-by-service-name child-symbol)))
-          (vector-push-extend child (children el))
-          (vector-push-extend el (parents child)))))))
+(defun make-dag (services)
+  (let ((dag (mapcar (lambda (service)
+                       (make-instance 'graph-element
+                                      :service service))
+                     services)))
+    (multiple-value-prog1 dag
+      (dolist (el dag)
+       (when (before (service el))
+         ;; This element is the child of another
+         (dolist (parent-symbol (before (service el)))
+           (let ((parent (find-graph-element-by-service-name dag parent-symbol)))
+             (vector-push-extend el (children parent))
+             (vector-push-extend parent (parents el)))))
+       (when (after (service el))
+         ;; This element is the parent of another
+         (dolist (child-symbol (after (service el)))
+           (let ((child (find-graph-element-by-service-name dag child-symbol)))
+             (vector-push-extend child (children el))
+             (vector-push-extend el (parents child)))))))))
 
-(defun find-graph-element-by-service-name (name)
+(defun find-graph-element-by-service-name (dag name)
   (find-if (lambda (el)
              (eq (name (service el)) name))
-           *graph-elements*))
+           dag))
 
 (defun start-service (service)
   (format t "Starting ~A...~%" (name service))
