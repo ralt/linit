@@ -1,6 +1,6 @@
 SOURCES := $(wildcard *.lisp) $(wildcard *.asd)
 QL_LOCAL=$(PWD)/.quicklocal/quicklisp
-LOCAL_OPTS=--noinform --noprint --disable-debugger --no-sysinit --no-userinit
+LOCAL_OPTS=--noinform --noprint --no-sysinit --no-userinit
 QL_OPTS=--load $(QL_LOCAL)/setup.lisp
 
 all: sbin/init

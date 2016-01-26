@@ -24,8 +24,7 @@
          (cffi:foreign-funcall
           "signal" :int ,signo :pointer ,default-handler :pointer)))))
 
-(defun main (args)
-  (declare (ignore args))
+(defun main ()
   (with-signal-handler sb-posix:sigchld
       (lambda ()
         (loop
