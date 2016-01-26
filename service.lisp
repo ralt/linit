@@ -16,6 +16,7 @@
 
 (defclass graph-element ()
   ((service :initarg :service :reader service :type service)
+   (mark :accessor mark :type boolean :initform nil)
    (children :accessor children
              :type (vector service)
              :initform (make-array 0
@@ -98,10 +99,22 @@ next tick will call the child, which will check all of its deps
 and be fine, so it'll start. This bit is fairly easy."
   (create-graph-elements)
   (dolist (el (root-elements *graph-elements*))
-    (unless (detect-cycle el)
+    (unless (has-cycle el)
       (start-graph-services el))))
 
-(defun detect-cycle (el))
+(defun root-elements (elements)
+  (remove-if-not (lambda (element)
+                   (null (parents element)))
+                 elements))
+
+(defun has-cycle (el)
+  (when (mark el)
+    (return-from has-cycle t))
+  (setf (mark el) t)
+  (loop for child across (children el)
+     do (when (has-cycle child)
+          (return-from has-cycle t)))
+  (setf (mark el) nil))
 
 (defun start-graph-services (el)
   (when (every (lambda (parent)
