@@ -16,13 +16,10 @@ sbin:
 	@mkdir -p sbin
 
 sbin/init: $(SOURCES) $(QL_LOCAL)/setup.lisp deps sbin
-	@buildapp \
-		--asdf-tree $(QL_LOCAL)/local-projects \
-		--asdf-tree $(QL_LOCAL)/dists \
-		--asdf-path . \
-		--load-system linit \
-		--compress-core \
-		--output sbin/init --entry linit:main
+	@sbcl $(LOCAL_OPTS) $(QL_OPTS) \
+		--eval '(push "$(PWD)/" asdf:*central-registry*)' \
+		--eval "(asdf:operate 'asdf:build-op :linit)" \
+		--eval '(quit)'
 
 .PHONY: clean
 

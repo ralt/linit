@@ -1,2 +1,3 @@
 (defpackage #:linit
-  (:use #:cl))
+  (:use #:cl)
+  (:export :main))
