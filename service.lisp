@@ -1,7 +1,6 @@
 (in-package #:linit)
 
 (defvar *services* nil)
-(defvar *graph-elements* nil)
 
 (deftype service-state ()
   '(member started stopped errored))
