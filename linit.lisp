@@ -56,4 +56,6 @@
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
     (start-services)
+    (swank:create-server :port 4444 :dont-close t :style nil)
+    ;; Just in case the swank server stops for some reason.
     (sb-impl::toplevel-repl nil)))
