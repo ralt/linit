@@ -24,6 +24,16 @@
          (cffi:foreign-funcall
           "signal" :int ,signo :pointer ,default-handler :pointer)))))
 
+(defun reboot ()
+  (sb-posix:sync)
+  (cffi:foreign-funcall "reboot" :int
+                        #x1234567 :int))
+
+(defun halt ()
+  (sb-posix:sync)
+  (cffi:foreign-funcall "reboot" :int
+                        #x4321fedc :int))
+
 (defun main ()
   (with-signal-handler sb-posix:sigchld
       (lambda ()
