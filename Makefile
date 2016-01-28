@@ -21,7 +21,12 @@ sbin/init: $(SOURCES) $(QL_LOCAL)/setup.lisp deps sbin
 		--eval "(asdf:operate 'asdf:build-op :linit)" \
 		--eval '(quit)'
 
-.PHONY: clean
+.PHONY: clean install
+
+install:
+	cp sbin/init /sbin/init
+	mkdir -p /lib/linit
+	cp -R default/* /lib/linit/
 
 clean:
 	@rm -rf deps .quicklocal bin quicklisp.lisp
