@@ -18,6 +18,7 @@
     `(let ((,new-service (make-instance 'service
                                        :name ',name
                                        ,@initargs)))
+       (export ',name)
        (if (find-service ',name)
            (replace-service ,new-service)
            (add-service ,new-service)))))
@@ -44,10 +45,8 @@
 
 (defun load-services (path)
   (dolist (service (directory path))
-    ;; For some reason, this needs to be re-applied for the load'ed
-    ;; file to be in the correct package.
-    (in-package #:linit)
-    (load service)))
+    (let ((*package* (find-package "LINIT-USER")))
+      (load service))))
 
 (defun start-services ()
   "Starts the services while respecting the dependencies.

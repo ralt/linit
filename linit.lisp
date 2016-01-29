@@ -24,16 +24,6 @@
          (cffi:foreign-funcall
           "signal" :int ,signo :pointer ,default-handler :pointer)))))
 
-(defun reboot ()
-  (sb-posix:sync)
-  (cffi:foreign-funcall "reboot" :int
-                        #x1234567 :int))
-
-(defun halt ()
-  (sb-posix:sync)
-  (cffi:foreign-funcall "reboot" :int
-                        #x4321fedc :int))
-
 (defun main ()
   (with-signal-handler sb-posix:sigchld
       (lambda ()
@@ -46,16 +36,13 @@
                  (let ((service (find-service-by-pid pid)))
                    (setf
                     (state service)
-                    (cond
-                      ((sb-posix:wifexited status)
-                       (if (= (sb-posix:wexitstatus status) 0)
-                           'stopped 'errored))
-                      (t 'errored)))
+                    (if (and (sb-posix:wifexited status)
+                             (= (sb-posix:wexitstatus status) 0))
+                        'stopped
+                        'errored))
                    (format t "~A changed to state ~A.~%"
                            (name service) (state service))))
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
     (start-services)
-    (swank:create-server :port 4444 :dont-close t :style nil)
-    ;; Just in case the swank server stops for some reason.
     (sb-impl::toplevel-repl nil)))
