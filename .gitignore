@@ -3,3 +3,4 @@ sbin/init
 .quicklocal
 quicklisp.lisp
 *.fasl
+.vagrant/
