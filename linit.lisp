@@ -45,4 +45,4 @@
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
     (start-services)
-    (swank:create-server :port 4 :style nil)))
+    (swank:create-server :port 4 :style nil :dont-close t)))
