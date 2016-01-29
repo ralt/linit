@@ -24,9 +24,9 @@ sbin/init: $(SOURCES) $(QL_LOCAL)/setup.lisp deps sbin
 .PHONY: clean install
 
 install:
-	cp sbin/init /sbin/init
-	mkdir -p /lib/linit
-	cp -R default/* /lib/linit/
+	cp $(DESTDIR)/sbin/init /sbin/init
+	mkdir -p $(DESTDIR)/lib/linit
+	cp -R default/* $(DESTDIR)/lib/linit/
 
 clean:
 	@rm -rf deps .quicklocal bin quicklisp.lisp
