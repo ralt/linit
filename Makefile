@@ -24,6 +24,9 @@ sbin/init: $(SOURCES) $(QL_LOCAL)/setup.lisp deps sbin
 .PHONY: clean install
 
 install:
+ifneq ("$(wildcard $(DESTDIR)/sbin/init)", "")
+	mv $(DESTDIR)/sbin/init $(DESTDIR)/sbin/init.bak
+endif
 	cp sbin/init $(DESTDIR)/sbin/init
 	mkdir -p $(DESTDIR)/lib/linit
 	cp -R default/* $(DESTDIR)/lib/linit/
