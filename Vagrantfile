@@ -3,5 +3,8 @@ Vagrant.configure(2) do |config|
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get update
     sudo apt-get install -y make sbcl
+    cd /vagrant
+    make
+    sudo make install
   SHELL
 end
