@@ -34,7 +34,7 @@
            *services*))
 
 (defun replace-service (new-service)
-  (setf *services* (append
+  (setf *services* (list
                     (remove-if (lambda (service)
                                  (eq (name service) (name new-service)))
                                *services*)
