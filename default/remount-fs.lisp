@@ -48,7 +48,7 @@
                                 :pass pass)))))
 
 (defclass fstab-entry ()
-  ((device :type string :initarg :device)
+  ((device :type string :initarg :device :reader device)
    (mount-point :type string :initarg :mount-point :reader mount-point)
    (filesystem :type string :initarg :filesystem)
    (options :type string :initarg :options :reader options)
