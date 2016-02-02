@@ -41,8 +41,16 @@
                         'stopped
                         'errored))
                    (format t "~A changed to state ~A.~%"
-                           (name service) (state service))))
+                           (name service) (state service))
+                   ;; Explicitly do this *after* setting the new state
+                   (when (eq (state service) 'stopped)
+                    (let ((dag (make-dag *services*)))
+                      (loop for child across (children
+                                              (find-graph-element-by-service-name
+                                               dag
+                                               (name service)))
+                         do (start-graph-services child))))))
              (sb-posix:syscall-error () (return)))))
     (load-services #p"/lib/linit/*.lisp")
-    (start-services)
+    (start-services *services*)
     (swank:create-server :port 4 :style nil :dont-close t)))

@@ -42,12 +42,15 @@
             (after-stopped (service parent))))))
 
 (defun start-graph-services (el)
-  (when (every (lambda (parent)
-                 (if (has-stopped-requirement el parent)
-                     (eq (state (service parent)) 'stopped)
-                     ;; aka non-nil
-                     (state (service parent))))
-               (parents el))
+  (when (and
+         ;; Don't start services that already started
+         (not (state (service el)))
+         (every (lambda (parent)
+                  (if (has-stopped-requirement el parent)
+                      (eq (state (service parent)) 'stopped)
+                      ;; aka non-nil
+                      (state (service parent))))
+                (parents el)))
     (start-service (service el))
     (loop for child across (children el) do (start-graph-services child))))
 

@@ -65,7 +65,7 @@
   (let ((*package* (find-package "LINIT-USER")))
     (load service)))
 
-(defun start-services ()
+(defun start-services (services)
   "Starts the services while respecting the dependencies.
 
 This is kinda the big job of linit, so let's take some time
@@ -96,7 +96,7 @@ dependencies are started before. If any is missing, then it's
 cancelling its start. When the last dependency will start, the
 next tick will call the child, which will check all of its deps
 and be fine, so it'll start. This bit is fairly easy."
-  (let ((graph (make-dag *services*)))
+  (let ((graph (make-dag services)))
     (dolist (el (root-elements graph))
       (unless (has-cycle el)
         (start-graph-services el)))))
