@@ -33,7 +33,14 @@
 (defun start-graph-services (el)
   (when (every (lambda (parent)
                  ;; aka non-nil
-                 (state (service parent)))
+                 (and (state (service parent))
+                      (and
+                       (if (before-stopped (service el))
+                           (eq (state (service parent)) 'stopped)
+                           t)
+                       (if (after-stopped (service parent))
+                           (eq (state (service parent)) 'stopped)
+                           t))))
                (parents el))
     (start-service (service el))
     (loop for child across (children el) do (start-graph-services child))))

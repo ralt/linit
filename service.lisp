@@ -11,7 +11,11 @@
    (name :reader name :initarg :name :type symbol)
    (start :initarg :start :reader start :type function :initform nil)
    (before :initarg :before :reader before :type list :initform nil)
-   (after :initarg :after :reader after :type list :initform nil)))
+   (after :initarg :after :reader after :type list :initform nil)
+   (before-stopped :initarg :before-stopped :reader before-stopped :type list
+                   :initform nil)
+   (after-stopped :initarg :after-stopped :reader after-stopped :type list
+                  :initform nil)))
 
 (defmacro defservice (name &rest initargs)
   (let ((new-service (gensym)))
