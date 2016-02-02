@@ -1,6 +1,9 @@
 (defservice network
     :before-stopped '(remount-fs)
     :start (lambda ()
+             (cffi:defcstruct (ifaddrs :size 56)
+               (ifa-next :pointer :offset 0)
+               (ifa-name :string :offset 8))
              (ensure-directories-exist #p "/run/network/")
              (uiop:run-program
               (format nil
