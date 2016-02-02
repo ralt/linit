@@ -27,6 +27,9 @@
            (replace-service ,new-service)
            (add-service ,new-service)))))
 
+(defun list-services ()
+  *services*)
+
 (defun find-service (name)
   (find-if (lambda (service)
              (eq (name service) name))
