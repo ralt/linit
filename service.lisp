@@ -48,9 +48,11 @@
   (push service *services*))
 
 (defun load-services (path)
-  (dolist (service (directory path))
-    (let ((*package* (find-package "LINIT-USER")))
-      (load service))))
+  (mapc #'load-service (directory path)))
+
+(defun load-service (service)
+  (let ((*package* (find-package "LINIT-USER")))
+    (load service)))
 
 (defun start-services ()
   "Starts the services while respecting the dependencies.
