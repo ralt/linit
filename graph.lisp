@@ -30,17 +30,23 @@
           (return-from has-cycle t)))
   (setf (mark el) nil))
 
+(defun has-stopped-requirement (el parent)
+  (or
+   (and
+    (before-stopped (service el))
+    (member (name (service parent))
+            (before-stopped (service el))))
+   (and
+    (after-stopped (service parent))
+    (member (name (service el))
+            (after-stopped (service parent))))))
+
 (defun start-graph-services (el)
   (when (every (lambda (parent)
-                 ;; aka non-nil
-                 (and (state (service parent))
-                      (and
-                       (if (before-stopped (service el))
-                           (eq (state (service parent)) 'stopped)
-                           t)
-                       (if (after-stopped (service parent))
-                           (eq (state (service parent)) 'stopped)
-                           t))))
+                 (if (has-stopped-requirement el parent)
+                     (eq (state (service parent)) 'stopped)
+                     ;; aka non-nil
+                     (state (service parent))))
                (parents el))
     (start-service (service el))
     (loop for child across (children el) do (start-graph-services child))))

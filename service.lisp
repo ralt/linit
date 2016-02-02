@@ -17,6 +17,14 @@
    (after-stopped :initarg :after-stopped :reader after-stopped :type list
                   :initform nil)))
 
+(defmethod initialize-instance :after ((service service) &key)
+  "Puts the (before|after)-stopped slots in (before|after)
+   so that the graph is properly built."
+  (when (before-stopped service)
+    (setf (slot-value service 'before) (before-stopped service)))
+  (when (after-stopped service)
+    (setf (slot-value service 'after) (after-stopped service))))
+
 (defmacro defservice (name &rest initargs)
   (let ((new-service (gensym)))
     `(let ((,new-service (make-instance 'service
@@ -104,7 +112,8 @@ and be fine, so it'll start. This bit is fairly easy."
                   :code (handler-case
                             (let ((startfn (start service)))
                               (when startfn
-                                (funcall startfn))
+                                (let ((*package* (find-package "LINIT-USER")))
+                                  (funcall startfn)))
                               0)
                           (error () -1))))
       (t (progn
