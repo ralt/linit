@@ -1,12 +1,13 @@
 (in-package #:linit)
 
 (defvar *services* nil)
+(defvar *sigchld-pids* (make-hash-table))
 
 (deftype service-state ()
   '(member started stopped errored))
 
 (defclass service ()
-  ((pid :accessor pid :type integer)
+  ((pid :accessor pid :type integer :initform nil)
    (state :accessor state :type service-state :initform nil)
    (name :reader name :initarg :name :type symbol)
    (start :initarg :start :reader start :type function :initform nil)
@@ -116,7 +117,16 @@ and be fine, so it'll start. This bit is fairly easy."
                                   (funcall startfn)))
                               0)
                           (error () -1))))
-      (t (progn
-           (setf (pid service) pid
-                 (state service) 'started)
-           (format t "~A started.~%" (name service)))))))
+      (t (multiple-value-bind (state presentp)
+             (gethash pid *sigchld-pids*)
+           (if presentp
+               ;; This pid has already stopped or errored,
+               ;; so we shouldn't set it to "started".
+               (progn
+                 (remhash pid *sigchld-pids*)
+                 (setf (pid service) pid
+                       (state service) state))
+               (progn
+                 (setf (pid service) pid
+                       (state service) 'started)
+                 (format t "~A started.~%" (name service)))))))))

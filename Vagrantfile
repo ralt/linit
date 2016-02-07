@@ -1,6 +1,7 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "debian/jessie64"
   config.vm.provision "shell", inline: <<-SHELL
+    echo 'root:root' | sudo chpasswd
     sudo apt-get update
     sudo apt-get install -y make sbcl libmount-dev
     cd /vagrant

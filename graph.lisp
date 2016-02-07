@@ -42,9 +42,10 @@
             (after-stopped (service parent))))))
 
 (defun start-graph-services (el)
+  (format t "Maybe starting ~A~%" (name (service el)))
   (when (and
          ;; Don't start services that already started
-         (not (state (service el)))
+         (null (state (service el)))
          (every (lambda (parent)
                   (if (has-stopped-requirement el parent)
                       (eq (state (service parent)) 'stopped)

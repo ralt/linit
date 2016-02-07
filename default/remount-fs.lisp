@@ -1,3 +1,31 @@
+(defclass fstab-entry ()
+  ((device :type string :initarg :device :reader device)
+   (mount-point :type string :initarg :mount-point :reader mount-point)
+   (filesystem :type string :initarg :filesystem)
+   (options :type string :initarg :options :reader options)
+   (dump :type string :initarg :dump)
+   (pass :type string :initarg :pass)))
+
+(defun fstab-entries ()
+  (with-open-file (f #p "/etc/fstab" :direction :input)
+    (loop for line = (read-line f nil 'eof)
+       until (eq line 'eof)
+       ;; This should be enough to assume we're on a correct line
+       when (and
+             (> (length line) 0)
+             (not (eq (elt line 0) #\#))
+             (= (length (ppcre:split "\\s+" line)) 6))
+       collect (destructuring-bind
+                     (device mount-point filesystem options dump pass)
+                   (ppcre:split "\\s+" line)
+                 (make-instance 'fstab-entry
+                                :device device
+                                :mount-point mount-point
+                                :filesystem filesystem
+                                :options options
+                                :dump dump
+                                :pass pass)))))
+
 (defservice remount-fs
     :start (lambda ()
              (cffi:define-foreign-library libmount
@@ -26,31 +54,3 @@
                  (cffi:foreign-funcall "mnt_free_context"
                                        :pointer ctx
                                        :void)))))
-
-(defun fstab-entries ()
-  (with-open-file (f #p "/etc/fstab" :direction :input)
-    (loop for line = (read-line f nil 'eof)
-       until (eq line 'eof)
-       ;; This should be enough to assume we're on a correct line
-       when (and
-             (> (length line) 0)
-             (not (eq (elt line 0) #\#))
-             (= (length (ppcre:split "\\s+" line)) 6))
-       collect (destructuring-bind
-                     (device mount-point filesystem options dump pass)
-                   (ppcre:split "\\s+" line)
-                 (make-instance 'fstab-entry
-                                :device device
-                                :mount-point mount-point
-                                :filesystem filesystem
-                                :options options
-                                :dump dump
-                                :pass pass)))))
-
-(defclass fstab-entry ()
-  ((device :type string :initarg :device :reader device)
-   (mount-point :type string :initarg :mount-point :reader mount-point)
-   (filesystem :type string :initarg :filesystem)
-   (options :type string :initarg :options :reader options)
-   (dump :type string :initarg :dump)
-   (pass :type string :initarg :pass)))
